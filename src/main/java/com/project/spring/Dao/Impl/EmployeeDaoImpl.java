@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import com.project.spring.Dao.EmployeeDao;
 import com.project.spring.Model.Employee;
-import com.project.spring.Model.RequestRegister;
 import com.project.spring.connection.DbConfig;
 
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +64,7 @@ public class EmployeeDaoImpl extends DbConfig implements EmployeeDao {
             psEmployee.setTimestamp(4, Timestamp.valueOf(data.getBod()));
             psEmployee.setString(5, data.getAddress());
             if (data.getManagerId() != null) {
-                psEmployee.setLong(6, data.getManagerId().getId());
+                psEmployee.setLong(6, data.getManagerId());
             } else {
                 psEmployee.setNull(6, Types.INTEGER);
             }
@@ -82,7 +81,7 @@ public class EmployeeDaoImpl extends DbConfig implements EmployeeDao {
 
     @Override
     public Employee getEmployeeById(Connection con, Long id) throws Exception {
-        String selectEmployeeById = "SELECT id_employee, fullname, email, bod, address FROM public.tbl_m_employee WHERE id_employee = ?";
+        String selectEmployeeById = "SELECT id_employee, fullname, email, bod, address, manager_id FROM public.tbl_m_employee WHERE id_employee = ?";
         Employee employee = new Employee();
         try (PreparedStatement ps = con.prepareStatement(selectEmployeeById)) {
             ps.setLong(1, id);
@@ -93,6 +92,7 @@ public class EmployeeDaoImpl extends DbConfig implements EmployeeDao {
                     employee.setEmail(rs.getString("email"));
                     employee.setBod(rs.getTimestamp("bod").toLocalDateTime());
                     employee.setAddress(rs.getString("address"));
+                    employee.setManagerId(rs.getLong("manager_id"));
                 }
             }
         }

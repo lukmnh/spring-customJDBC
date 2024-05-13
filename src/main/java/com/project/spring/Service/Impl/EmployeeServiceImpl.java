@@ -45,7 +45,6 @@ public class EmployeeServiceImpl extends DbConfig implements EmployeeService {
             employee.setEmail(data.getEmail());
             employee.setBod(data.getBod());
             employee.setAddress(data.getAddress());
-            employee.setManagerId(data.getManagerId());
             Employee savedEmployee = emp.register(con, employee);
 
             // insert user
@@ -58,7 +57,7 @@ public class EmployeeServiceImpl extends DbConfig implements EmployeeService {
 
             // fetch full details of managerId
             Employee manager = emp.getEmployeeById(con, data.getManagerId().getId());
-            savedEmployee.setManagerId(manager);
+            savedEmployee.setManagerId(manager.getId());
 
             // fetch full details of role
             Role role = userDao.getRoleById(con, data.getRole().getId());

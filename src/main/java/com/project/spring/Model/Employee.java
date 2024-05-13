@@ -1,7 +1,6 @@
 package com.project.spring.Model;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.stereotype.Component;
@@ -12,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Component
@@ -31,11 +29,9 @@ public class Employee {
     private LocalDateTime bod;
     @Column(name = "address")
     private String address;
-    @OneToMany(mappedBy = "employee")
-    private List<User> users;
     @ManyToOne
     @JoinColumn(name = "manager_id")
-    private Employee managerId;
+    private Long managerId;
 
     public Long getId() {
         return id;
@@ -77,19 +73,11 @@ public class Employee {
         this.address = address;
     }
 
-    public List<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<User> users) {
-        this.users = users;
-    }
-
-    public Employee getManagerId() {
+    public Long getManagerId() {
         return managerId;
     }
 
-    public void setManagerId(Employee managerId) {
+    public void setManagerId(Long managerId) {
         this.managerId = managerId;
     }
 }

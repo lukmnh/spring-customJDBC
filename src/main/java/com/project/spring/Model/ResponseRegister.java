@@ -11,7 +11,7 @@ public class ResponseRegister {
     @CreationTimestamp
     private LocalDateTime bod;
     private String address;
-    private Employee manager_id;
+    private Long manager_id;
     private String managerName;
     private String password;
     private Role role;
@@ -50,11 +50,11 @@ public class ResponseRegister {
         this.address = address;
     }
 
-    public Employee getManager_id() {
+    public Long getManager_id() {
         return manager_id;
     }
 
-    public void setManager_id(Employee manager_id) {
+    public void setManager_id(Long manager_id) {
         this.manager_id = manager_id;
     }
 

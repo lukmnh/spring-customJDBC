@@ -24,8 +24,6 @@ public class Role {
     private String name;
     @Column(name = "role_level")
     private int level;
-    @OneToMany(mappedBy = "role")
-    private List<User> users;
 
     public int getId() {
         return id;
@@ -51,11 +49,4 @@ public class Role {
         this.level = level;
     }
 
-    public List<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<User> users) {
-        this.users = users;
-    }
 }
