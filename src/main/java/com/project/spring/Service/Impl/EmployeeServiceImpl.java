@@ -15,6 +15,7 @@ import com.project.spring.Helper.Util;
 import com.project.spring.Model.Employee;
 import com.project.spring.Model.RequestRegister;
 import com.project.spring.Model.ResponseRegister;
+import com.project.spring.Model.Role;
 import com.project.spring.Model.User;
 import com.project.spring.Service.EmployeeService;
 import com.project.spring.connection.DbConfig;
@@ -53,7 +54,15 @@ public class EmployeeServiceImpl extends DbConfig implements EmployeeService {
             String hashedPassword = hashPassword(data.getPassword());
             user.setPassword(hashedPassword);
             user.setRole(data.getRole());
-            userDao.saveUser(con, user);
+            User savedUser = userDao.saveUser(con, user);
+
+            // fetch full details of managerId
+            Employee manager = emp.getEmployeeById(con, data.getManagerId().getId());
+            savedEmployee.setManagerId(manager);
+
+            // fetch full details of role
+            Role role = userDao.getRoleById(con, data.getRole().getId());
+            savedUser.setRole(role);
 
             // response insert
             ResponseRegister resp = new ResponseRegister();
@@ -62,7 +71,8 @@ public class EmployeeServiceImpl extends DbConfig implements EmployeeService {
             resp.setBod(savedEmployee.getBod());
             resp.setAddress(savedEmployee.getAddress());
             resp.setManager_id(savedEmployee.getManagerId());
-            resp.setRole(user.getRole());
+            resp.setRole(savedUser.getRole());
+            resp.setPassword(savedUser.getPassword());
             response.put("data", resp);
 
         } catch (Exception e) {

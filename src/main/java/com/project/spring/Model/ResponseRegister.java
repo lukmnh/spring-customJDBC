@@ -12,8 +12,11 @@ public class ResponseRegister {
     private LocalDateTime bod;
     private String address;
     private Employee manager_id;
+    private String managerName;
     private String password;
     private Role role;
+    private String roleName;
+    private int roleLevel;
 
     public String getFullname() {
         return fullname;

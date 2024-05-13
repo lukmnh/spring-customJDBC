@@ -9,5 +9,5 @@ import com.project.spring.Model.ResponseRegister;
 public interface EmployeeDao {
     public Employee register(Connection con, Employee data) throws Exception;
 
-    public String getDataByEmail(String email, Connection con) throws Exception;
+    public Employee getEmployeeById(Connection con, Long id) throws Exception;
 }
