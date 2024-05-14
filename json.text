@@ -23,5 +23,5 @@
 /login
 {
     "email" : "john.doe@example.com",
-    "password" : "yourpassword"
+    "password" : "yourpassword" / enemy-has-been-slayed
 }
