@@ -19,3 +19,9 @@
 {
     "id" : "831"
 }
+
+/login
+{
+    "email" : "john.doe@example.com",
+    "password" : "yourpassword"
+}

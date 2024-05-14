@@ -10,6 +10,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.spring.Dao.Impl.EmployeeDaoImpl;
 import com.project.spring.Dao.Impl.UserDaoImpl;
 import com.project.spring.Helper.Util;
@@ -34,6 +35,7 @@ public class EmployeeServiceImpl extends DbConfig implements EmployeeService {
     @Override
     public Map<String, Object> dataEmployeeUser(RequestRegister data) throws Exception {
         Map<String, Object> response = new HashMap<>();
+        ObjectMapper mapper = new ObjectMapper();
         Connection con = null;
         try {
             if (!Util.isConnectionAvail(con)) {
@@ -75,7 +77,8 @@ public class EmployeeServiceImpl extends DbConfig implements EmployeeService {
             resp.setRole(savedUser.getRole());
             resp.setPassword(savedUser.getPassword());
             response.put("data", resp);
-
+            String jsonResponse = mapper.writeValueAsString(response);
+            log.info("Response: " + jsonResponse);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             response.put("error", e.getMessage());

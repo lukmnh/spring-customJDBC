@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.spring.Dao.UserDao;
 import com.project.spring.Helper.Util;
 import com.project.spring.Model.RequestLogin;
@@ -23,6 +24,7 @@ public class UserServiceImpl extends DbConfig implements UserService {
     @Override
     public Map<String, Object> login(RequestLogin data) throws Exception {
         Map<String, Object> result = new HashMap<>();
+        ObjectMapper mapper = new ObjectMapper();
         Connection con = null;
         try {
             if (!Util.isConnectionAvail(con)) {
@@ -30,6 +32,9 @@ public class UserServiceImpl extends DbConfig implements UserService {
             }
             ResponseLogin responseLogin = user.login(con, data);
             result.put("data", responseLogin);
+            // Convert response to JSON string and log it
+            String jsonResponse = mapper.writeValueAsString(responseLogin);
+            log.info("Response: " + jsonResponse);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new Exception("error", e);
