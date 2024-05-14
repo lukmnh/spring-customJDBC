@@ -4,6 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import com.project.spring.Dao.Impl.UserDaoImpl;
 import com.project.spring.Helper.Util;
 import com.project.spring.Model.Employee;
 import com.project.spring.Model.RequestRegister;
+import com.project.spring.Model.ResponseManagerId;
 import com.project.spring.Model.ResponseRegister;
 import com.project.spring.Model.Role;
 import com.project.spring.Model.User;
@@ -56,7 +58,7 @@ public class EmployeeServiceImpl extends DbConfig implements EmployeeService {
             User savedUser = userDao.saveUser(con, user);
 
             // fetch full details of managerId
-            Employee manager = emp.getEmployeeById(con, data.getManagerId().getId());
+            Employee manager = emp.getEmployeeById(con, data.getManagerId());
             savedEmployee.setManagerId(manager.getId());
 
             // fetch full details of role
@@ -96,6 +98,33 @@ public class EmployeeServiceImpl extends DbConfig implements EmployeeService {
             hexString.append(hex);
         }
         return hexString.toString();
+    }
+
+    @Override
+    public Map<String, Object> getDataEmployee(Long id) throws Exception {
+        Map<String, Object> result = new HashMap<>();
+        Connection con = null;
+        try {
+            if (!Util.isConnectionAvail(con)) {
+                con = this.getConnection();
+            }
+            if (id == null) {
+                result.put("message", "You are trying to access without inputting the employee ID");
+                return result;
+            }
+            List<ResponseManagerId> dataEmployee = emp.getDataEmployee(con, id);
+            if (dataEmployee.isEmpty()) {
+                result.put("message", "The id you are trying to access is not matching");
+            } else {
+                result.put("data", dataEmployee);
+            }
+        } catch (Exception e) {
+            log.error("Error fetching data", e);
+            result.put("error", e.getMessage());
+        } finally {
+            closeConnection(con);
+        }
+        return result;
     }
 
 }

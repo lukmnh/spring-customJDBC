@@ -32,6 +32,17 @@ public class Employee {
     @ManyToOne
     @JoinColumn(name = "manager_id")
     private Long managerId;
+    @ManyToOne
+    @JoinColumn(name = "id_user")
+    private User user;
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public Long getId() {
         return id;

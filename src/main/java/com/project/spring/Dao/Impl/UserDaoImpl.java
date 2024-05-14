@@ -64,6 +64,8 @@ public class UserDaoImpl implements UserDao {
                     role.setName(rs.getString("role_desc"));
                     role.setLevel(rs.getInt("role_level"));
                 }
+            } catch (SQLException e) {
+                log.error("failed to fetch role of the id role : {}", id, e);
             }
         }
         return role;

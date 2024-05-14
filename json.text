@@ -1,3 +1,5 @@
+
+/registration
 {
     "id" : "1",
     "fullname": "John Doe",
@@ -11,4 +13,9 @@
     "role": {
         "id": 1
     }
+}
+
+/dataEmployee
+{
+    "id" : "831"
 }

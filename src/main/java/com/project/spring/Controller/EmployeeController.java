@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.spring.Model.RequestRegister;
-import com.project.spring.Model.ResponseRegister;
 import com.project.spring.Service.Impl.EmployeeServiceImpl;
 
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +38,28 @@ public class EmployeeController {
             log.error(e.getMessage(), e);
             response.put("error", e.getMessage());
             return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @RequestMapping(value = "/dataEmployee", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> getData(@RequestBody Map<String, Long> param) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Long id = param.get("id");
+            if (id == null) {
+                response.put("message", "You are trying to access without inputting the employee ID");
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            }
+            response = service.getDataEmployee(id);
+            if (response.get("data") == null) {
+                response.put("message", "The ID you are trying to access is not matching");
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            response.put("error", e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
 }

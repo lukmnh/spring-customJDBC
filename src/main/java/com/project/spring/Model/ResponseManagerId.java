@@ -2,27 +2,27 @@ package com.project.spring.Model;
 
 import java.time.LocalDateTime;
 
-import org.hibernate.annotations.CreationTimestamp;
-
-public class RequestRegister {
-
+public class ResponseManagerId {
     private Long id;
-    private String fullname;
-    private String email;
-    @CreationTimestamp
-    private LocalDateTime bod;
-    private String address;
-    private Long managerId;
-    private String password;
-    private User user;
-    private Role role;
 
-    public String getPassword() {
-        return password;
+    private String fullname;
+
+    private String email;
+
+    private LocalDateTime bod;
+
+    private String address;
+
+    private Employee managerId;
+
+    private User user;
+
+    public User getUser() {
+        return user;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Long getId() {
@@ -65,27 +65,12 @@ public class RequestRegister {
         this.address = address;
     }
 
-    public Long getManagerId() {
+    public Employee getManagerId() {
         return managerId;
     }
 
-    public void setManagerId(Long managerId) {
+    public void setManagerId(Employee managerId) {
         this.managerId = managerId;
     }
 
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
 }
