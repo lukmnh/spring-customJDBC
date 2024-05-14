@@ -32,7 +32,7 @@ public class EmployeeController {
             // string
             // ResponseRegister register = mapper.readValue(json, ResponseRegister.class);
             response = service.dataEmployeeUser(param);
-            // response.put("message", "insert data success");
+            response.put("message", "insert data success");
             return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

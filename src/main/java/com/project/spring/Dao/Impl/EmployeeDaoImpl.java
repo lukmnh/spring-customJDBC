@@ -29,9 +29,9 @@ public class EmployeeDaoImpl extends DbConfig implements EmployeeDao {
     @Override
     public Employee register(Connection con, Employee data) throws Exception {
         String insertDataEmployee = "INSERT INTO public.tbl_m_employee(id_employee, fullname, email, bod, address, manager_id) VALUES (?,?,?,?,?,?)";
-
-        try (PreparedStatement psEmployee = con.prepareStatement(insertDataEmployee, Statement.RETURN_GENERATED_KEYS)) {
-
+        PreparedStatement psEmployee = null;
+        try {
+            psEmployee = con.prepareStatement(insertDataEmployee, Statement.RETURN_GENERATED_KEYS);
             // insert employee data
             psEmployee.setLong(1, data.getId());
             psEmployee.setString(2, data.getFullname());
@@ -50,6 +50,8 @@ public class EmployeeDaoImpl extends DbConfig implements EmployeeDao {
         } catch (SQLException e) {
             log.error("Failed to register employee", e);
             throw new Exception("Failed to register employee", e);
+        } finally {
+            closeStatement(null, psEmployee);
         }
         return data;
     }
@@ -72,6 +74,8 @@ public class EmployeeDaoImpl extends DbConfig implements EmployeeDao {
             } catch (SQLException e) {
                 log.error("failed to fetch data employee", e);
                 throw new Exception("failed to fetch data from database", e);
+            } finally {
+                closeStatement(rs, ps);
             }
         }
         return employee;
@@ -117,6 +121,8 @@ public class EmployeeDaoImpl extends DbConfig implements EmployeeDao {
         } catch (Exception e) {
             log.error("failed to fetch data", e);
             throw new Exception("failed to fetch data from database", e);
+        } finally {
+            closeStatement(rs, ps);
         }
         return response;
     }
