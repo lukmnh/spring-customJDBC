@@ -79,7 +79,6 @@ public class UserDaoImpl extends DbConfig implements UserDao {
             if (rs.next()) {
                 String storedHashedPassword = rs.getString("password");
                 String inputHashedPassword = hashPassword(data.getPassword());
-
                 if (storedHashedPassword.equals(inputHashedPassword)) {
                     response.setName(rs.getString("fullname"));
                     response.setEmail(rs.getString("email"));
@@ -98,6 +97,23 @@ public class UserDaoImpl extends DbConfig implements UserDao {
             closeStatement(rs, ps);
         }
         return response;
+    }
+
+    public String getPasswordByEmail(String email) throws SQLException {
+        String password = null;
+        Connection con = this.getConnection();
+        String query = "SELECT ttu.password FROM public.tbl_tr_user ttu "
+                + "JOIN public.tbl_m_employee tme ON ttu.id_user = tme.id_employee "
+                + "WHERE tme.email = ?";
+        try (PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    password = rs.getString("password");
+                }
+            }
+        }
+        return password;
     }
 
     private String hashPassword(String password) throws NoSuchAlgorithmException {

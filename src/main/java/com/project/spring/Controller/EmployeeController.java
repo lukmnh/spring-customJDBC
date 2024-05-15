@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @Slf4j
+@RequestMapping(value = "/api")
 public class EmployeeController {
 
     @Autowired
@@ -45,7 +46,7 @@ public class EmployeeController {
     public ResponseEntity<Map<String, Object>> getData(@RequestBody Map<String, Long> param) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Long id = param.get("id");
+            Long id = param != null ? param.get("id") : null;
             if (id == null) {
                 response.put("message", "You are trying to access without inputting the employee ID");
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
