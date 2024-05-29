@@ -1,16 +1,19 @@
 package com.project.spring.Dao.Impl;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.stereotype.Repository;
 
 import com.project.spring.Dao.EmployeeDao;
@@ -27,56 +30,65 @@ import lombok.extern.slf4j.Slf4j;
 public class EmployeeDaoImpl extends DbConfig implements EmployeeDao {
 
     @Override
-    public Employee register(Connection con, Employee data) throws Exception {
-        String insertDataEmployee = "INSERT INTO public.tbl_m_employee(id_employee, fullname, email, bod, address, manager_id) VALUES (?,?,?,?,?,?)";
+    public Map<String, Object> register(Connection con, Map<String, Object> data) throws Exception {
+        Map<String, Object> result = new HashMap<>();
+        String insertDataEmployee = "INSERT INTO public.tbl_m_employee(fullname, email, bod, address, manager_id) VALUES (?,?,?,?,?)";
         PreparedStatement psEmployee = null;
         try {
             psEmployee = con.prepareStatement(insertDataEmployee, Statement.RETURN_GENERATED_KEYS);
             // insert employee data
-            psEmployee.setLong(1, data.getId());
-            psEmployee.setString(2, data.getFullname());
-            psEmployee.setString(3, data.getEmail());
-            psEmployee.setTimestamp(4, Timestamp.valueOf(data.getBod()));
-            psEmployee.setString(5, data.getAddress());
-            if (data.getManagerId() != null) {
-                psEmployee.setLong(6, data.getManagerId());
+            psEmployee.setString(1, (String) data.get("fullname"));
+            psEmployee.setString(2, (String) data.get("email"));
+            LocalDate localDate = (LocalDate) data.get("bod");
+            Date sqlDate = Date.valueOf(localDate);
+            psEmployee.setDate(3, sqlDate);
+            psEmployee.setString(4, (String) data.get("address"));
+            if (data.get("managerId") != null) {
+                psEmployee.setInt(5, (int) data.get("managerId"));
             } else {
-                psEmployee.setNull(6, Types.INTEGER);
+                psEmployee.setNull(5, Types.INTEGER);
             }
-
             psEmployee.executeUpdate();
+
+            ResultSet rs = psEmployee.getGeneratedKeys();
+            if (rs.next()) {
+                data.put("id", rs.getLong(1));
+            }
+            result = data;
             con.commit();
 
         } catch (SQLException e) {
             log.error("Failed to register employee", e);
             throw new Exception("Failed to register employee", e);
         } finally {
-            closeStatement(null, psEmployee);
+            closeStatement(rs, psEmployee);
         }
-        return data;
+        return result;
     }
 
     @Override
-    public Employee getEmployeeById(Connection con, Long id) throws Exception {
+    public Map<String, Object> getEmployeeById(Connection con, int id) throws Exception {
         String selectEmployeeById = "SELECT id_employee, fullname, email, bod, address, manager_id FROM public.tbl_m_employee WHERE id_employee = ?";
-        Employee employee = new Employee();
-        try (PreparedStatement ps = con.prepareStatement(selectEmployeeById)) {
-            ps.setLong(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    employee.setId(rs.getLong("id_employee"));
-                    employee.setFullname(rs.getString("fullname"));
-                    employee.setEmail(rs.getString("email"));
-                    employee.setBod(rs.getTimestamp("bod").toLocalDateTime());
-                    employee.setAddress(rs.getString("address"));
-                    employee.setManagerId(rs.getLong("manager_id"));
-                }
-            } catch (SQLException e) {
-                log.error("failed to fetch data employee", e);
-                throw new Exception("failed to fetch data from database", e);
-            } finally {
-                closeStatement(rs, ps);
+        Map<String, Object> employee = new HashMap<>();
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = con.prepareStatement(selectEmployeeById);
+            ps.setInt(1, id);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                employee.put("id", rs.getLong("id_employee"));
+                employee.put("fullname", rs.getString("fullname"));
+                employee.put("email", rs.getString("email"));
+                employee.put("bod", rs.getTimestamp("bod").toLocalDateTime());
+                employee.put("address", rs.getString("address"));
+                employee.put("managerId", rs.getLong("manager_id"));
             }
+        } catch (SQLException e) {
+            log.error("failed to fetch data employee", e);
+            throw new Exception("failed to fetch data from database", e);
+        } finally {
+            closeStatement(rs, ps);
         }
         return employee;
     }

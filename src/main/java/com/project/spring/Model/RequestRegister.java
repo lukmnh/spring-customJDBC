@@ -1,21 +1,17 @@
 package com.project.spring.Model;
 
-import java.time.LocalDateTime;
-
-import org.hibernate.annotations.CreationTimestamp;
+import java.time.LocalDate;
 
 public class RequestRegister {
 
-    private Long id;
     private String fullname;
     private String email;
-    @CreationTimestamp
-    private LocalDateTime bod;
+    private LocalDate bod;
     private String address;
-    private Long managerId;
+    private int managerId;
     private String password;
-    private User user;
-    private Role role;
+    // private User user;
+    // private Role role;
 
     public String getPassword() {
         return password;
@@ -23,14 +19,6 @@ public class RequestRegister {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getFullname() {
@@ -49,11 +37,11 @@ public class RequestRegister {
         this.email = email;
     }
 
-    public LocalDateTime getBod() {
+    public LocalDate getBod() {
         return bod;
     }
 
-    public void setBod(LocalDateTime bod) {
+    public void setBod(LocalDate bod) {
         this.bod = bod;
     }
 
@@ -65,27 +53,27 @@ public class RequestRegister {
         this.address = address;
     }
 
-    public Long getManagerId() {
+    public int getManagerId() {
         return managerId;
     }
 
-    public void setManagerId(Long managerId) {
+    public void setManagerId(int managerId) {
         this.managerId = managerId;
     }
 
-    public Role getRole() {
-        return role;
-    }
+    // public Role getRole() {
+    // return role;
+    // }
 
-    public void setRole(Role role) {
-        this.role = role;
-    }
+    // public void setRole(Role role) {
+    // this.role = role;
+    // }
 
-    public User getUser() {
-        return user;
-    }
+    // public User getUser() {
+    // return user;
+    // }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+    // public void setUser(User user) {
+    // this.user = user;
+    // }
 }

@@ -6,14 +6,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
 import com.project.spring.Dao.UserDao;
 import com.project.spring.Model.RequestLogin;
 import com.project.spring.Model.ResponseLogin;
-import com.project.spring.Model.Role;
-import com.project.spring.Model.User;
 import com.project.spring.connection.DbConfig;
 
 import lombok.extern.slf4j.Slf4j;
@@ -23,15 +23,20 @@ import lombok.extern.slf4j.Slf4j;
 public class UserDaoImpl extends DbConfig implements UserDao {
 
     @Override
-    public User saveUser(Connection con, User data) throws Exception {
+    public Map<String, Object> saveUser(Connection con, Map<String, Object> data) throws Exception {
+        Map<String, Object> result = new HashMap<>();
         String insertDataUser = "INSERT INTO public.tbl_tr_user(id_user, password, role_id) VALUES (?,?,?)";
         PreparedStatement psUser = null;
         try {
+            Map<String, Object> employee = (Map<String, Object>) data.get("employee");
+            Map<String, Object> role = (Map<String, Object>) data.get("role");
             psUser = con.prepareStatement(insertDataUser);
-            psUser.setLong(1, data.getEmployee().getId());
-            psUser.setString(2, data.getPassword());
-            psUser.setInt(3, data.getRole().getId());
-            psUser.executeUpdate();
+            psUser.setLong(1, (Long) employee.get("id"));
+            psUser.setString(2, (String) data.get("password"));
+            psUser.setInt(3, (Integer) role.get("id"));
+            int rowsAffected = psUser.executeUpdate();
+            result.put("data", rowsAffected);
+            log.info("data insert : {}", result);
             con.commit();
         } catch (SQLException e) {
             log.error("Failed to register employee", e);
@@ -43,22 +48,23 @@ public class UserDaoImpl extends DbConfig implements UserDao {
     }
 
     @Override
-    public Role getRoleById(Connection con, int id) throws Exception {
-        String selectRoleById = "SELECT id_role, role_desc, role_level FROM public.tbl_m_role WHERE id_role = ?";
-        Role role = new Role();
-        try (PreparedStatement ps = con.prepareStatement(selectRoleById)) {
-            ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    role.setId(rs.getInt("id_role"));
-                    role.setName(rs.getString("role_desc"));
-                    role.setLevel(rs.getInt("role_level"));
-                }
-            } catch (SQLException e) {
-                log.error("failed to fetch role of the id role : {}", id, e);
-            } finally {
-                closeStatement(rs, ps);
+    public Map<String, Object> getRoleById(Connection con) throws Exception {
+        String selectRoleById = "SELECT id_role, role_desc from public.tbl_m_role where role_level in (select min(role_level) from public.tbl_m_role)";
+        Map<String, Object> role = new HashMap<>();
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = con.prepareStatement(selectRoleById);
+
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                role.put("id", rs.getInt("id_role"));
+                role.put("name", rs.getString("role_desc"));
             }
+        } catch (SQLException e) {
+            log.error("failed to fetch role of the id role : {}", selectRoleById, e);
+        } finally {
+            closeStatement(rs, ps);
         }
         return role;
     }

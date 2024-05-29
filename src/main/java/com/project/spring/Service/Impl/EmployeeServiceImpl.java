@@ -10,18 +10,15 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.spring.Dao.Impl.EmployeeDaoImpl;
 import com.project.spring.Dao.Impl.UserDaoImpl;
 import com.project.spring.Helper.Util;
-import com.project.spring.Model.Employee;
 import com.project.spring.Model.RequestRegister;
 import com.project.spring.Model.ResponseManagerId;
-import com.project.spring.Model.ResponseRegister;
-import com.project.spring.Model.Role;
-import com.project.spring.Model.User;
 import com.project.spring.Service.EmployeeService;
 import com.project.spring.connection.DbConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Service
 public class EmployeeServiceImpl extends DbConfig implements EmployeeService {
@@ -43,41 +40,40 @@ public class EmployeeServiceImpl extends DbConfig implements EmployeeService {
             }
             con.setAutoCommit(false);
             // insert employee
-            Employee employee = new Employee();
-            employee.setId(data.getId());
-            employee.setFullname(data.getFullname());
-            employee.setEmail(data.getEmail());
-            employee.setBod(data.getBod());
-            employee.setAddress(data.getAddress());
-            employee.setManagerId(data.getManagerId());
-            Employee savedEmployee = emp.register(con, employee);
+            Map<String, Object> employee = new HashMap<>();
+
+            employee.put("fullname", data.getFullname());
+            employee.put("email", data.getEmail());
+            employee.put("bod", data.getBod());
+            employee.put("address", data.getAddress());
+            employee.put("managerId", data.getManagerId());
+            Map<String, Object> savedEmployee = emp.register(con, employee);
 
             // insert user
-            User user = new User();
-            user.setEmployee(savedEmployee);
+            Map<String, Object> user = new HashMap<>();
+            user.put("employee", savedEmployee);
+            log.info("data : {}", user);
             String hashedPassword = hashPassword(data.getPassword());
-            user.setPassword(hashedPassword);
-            user.setRole(data.getRole());
-            User savedUser = userDao.saveUser(con, user);
+            user.put("password", hashedPassword);
+            // user.put("role", data.getRole());
+            Map<String, Object> role = userDao.getRoleById(con);
+            user.put("role", role);
+            log.info("data : {}", user);
 
-            // fetch full details of managerId
-            Employee manager = emp.getEmployeeById(con, data.getManagerId());
-            savedEmployee.setManagerId(manager.getManagerId());
-
-            // fetch full details of role
-            Role role = userDao.getRoleById(con, data.getRole().getId());
-            savedUser.setRole(role);
+            Map<String, Object> savedUser = userDao.saveUser(con, user);
 
             // response insert
-            ResponseRegister resp = new ResponseRegister();
-            resp.setFullname(savedEmployee.getFullname());
-            resp.setEmail(savedEmployee.getEmail());
-            resp.setBod(savedEmployee.getBod());
-            resp.setAddress(savedEmployee.getAddress());
-            resp.setManager_id(savedEmployee.getManagerId());
-            resp.setRole(savedUser.getRole());
-            resp.setPassword(savedUser.getPassword());
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("fullname", savedEmployee.get("fullname"));
+            resp.put("email", savedEmployee.get("email"));
+            resp.put("bod", savedEmployee.get("bod"));
+            resp.put("address", savedEmployee.get("address"));
+            resp.put("manager_id", savedEmployee.get("managerId"));
+            resp.put("role", savedUser.get("role"));
+            resp.put("password", savedUser.get("password"));
+
             response.put("data", resp);
+            mapper.registerModule(new JavaTimeModule());
             String jsonResponse = mapper.writeValueAsString(resp);
             log.info("Response: " + jsonResponse);
         } catch (Exception e) {

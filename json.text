@@ -1,18 +1,12 @@
 
 /registration
 {
-    "id" : "1",
-    "fullname": "John Doe",
-    "email": "john.doe@example.com",
-    "bod": "2024-05-20T12:00:00",
-    "address": "123 Main St",
-    "managerId": {
-        "id": 1
-    },
-    "password": "yourpassword",
-    "role": {
-        "id": 1
-    }
+    "fullname": "lia",
+    "email": "lia@freelance.co.id",
+    "bod": "2007-08-24",
+    "address": "Jakarta, Indonesia",
+    "managerId": 11,
+    "password": "yourpassword"
 }
 
 /dataEmployee
@@ -24,4 +18,14 @@
 {
     "email" : "john.doe@example.com",
     "password" : "yourpassword" / enemy-has-been-slayed
+}
+
+/requestTravle
+{
+    "start_location_at": "New York",
+    "location_ended_at": "San Francisco",
+    "start_journey_date": "01-06-2024 08:00:00",
+    "end_journey_date": "10-06-2024 17:00:00",
+    "description": "Business trip to San Francisco",
+    "email": "lia@freelance.co.id"
 }
