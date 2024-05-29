@@ -146,4 +146,40 @@ public class RequestTravelManagementDaoImpl extends DbConfig implements RequestT
         return new Date(dateFormat.parse(dateStr).getTime());
     }
 
+    @Override
+    public Map<String, Object> findLastHistoryTravel(String email, Connection con) throws Exception {
+        Map<String, Object> result = new HashMap<>();
+        String findHistory = "select e.fullname, t.start_location_at, t.location_ended_at, t.description, s.date, s.status from tbl_m_status_tracking s\n"
+                +
+                "join tbl_tr_travelexpense t on s.travel_id = t.id_travel\n" +
+                "join tbl_m_employee e on s.employee_id = e.id_employee\n" +
+                "where date in (select max(date) from tbl_m_status_tracking group by employee_id, travel_id)\n" +
+                "and e.email = 'lia@freelance.co.id' order by date desc limit 1\n";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            ps = con.prepareStatement(findHistory);
+            ps.setString(1, email);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                result.put("fullname", rs.getString("fullname"));
+                result.put("start_location_at", rs.getString("start_location_at"));
+                result.put("location_ended_at", rs.getString("location_ended_at"));
+                result.put("description", rs.getString("description"));
+                result.put("date", rs.getString("date"));
+                result.put("status", rs.getString("status"));
+            }
+
+            log.info("findHistory : {}", result);
+        } catch (Exception e) {
+            log.error("failed to fetch history", e);
+            throw new Exception("failed to fetch history from database", e);
+        } finally {
+            closeStatement(rs, ps);
+        }
+        return result;
+    }
+
 }

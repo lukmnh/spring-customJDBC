@@ -12,4 +12,5 @@ public interface RequestTravelManagementDao {
 
     public int findIdTravelByEmail(String email, Connection con) throws Exception;
 
+    public Map<String, Object> findLastHistoryTravel(String email, Connection con) throws Exception;
 }

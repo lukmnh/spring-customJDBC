@@ -81,6 +81,26 @@ public class RequestTravelManagementServiceImpl extends DbConfig implements Requ
         return response;
     }
 
+    @Override
+    public Map<String, Object> getHistoryByEmail(String email) throws Exception {
+        Map<String, Object> response = new HashMap<>();
+        Connection con = null;
+        if (!Util.isConnectionAvail(con)) {
+            con = this.getConnection();
+        }
+        con.setAutoCommit(false);
+
+        try {
+            response = rtm.findLastHistoryTravel(email, con);
+        } catch (Exception e) {
+            log.error("Failed to check history", e);
+            throw new Exception("Failed to check history", e);
+        } finally {
+            closeConnection(con);
+        }
+        return response;
+    }
+
     private Date parseDate(String dateStr) throws ParseException {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         return new Date(dateFormat.parse(dateStr).getTime());
