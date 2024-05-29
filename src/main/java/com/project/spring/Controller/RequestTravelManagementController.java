@@ -19,7 +19,7 @@ public class RequestTravelManagementController {
     @Autowired
     private RequestTravelManagementService requestTravelManagementService;
 
-    @PostMapping("/insert")
+    @PostMapping("/requestTravel")
     public ResponseEntity<Map<String, Object>> insertTravelRequest(@RequestBody Map<String, Object> param) {
         try {
             Map<String, Object> response = requestTravelManagementService.insertRequest(param);

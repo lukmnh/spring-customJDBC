@@ -3,6 +3,7 @@ package com.project.spring.Dao.Impl;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Repository;
@@ -37,6 +38,7 @@ public class RequestTravelManagementDaoImpl extends DbConfig implements RequestT
                             : null);
             ps.setString(5, param.get("description") != null ? param.get("description").toString() : null);
             ps.setString(6, param.get("email") != null ? param.get("email").toString() : null);
+            result.putAll(param);
 
             int rowsAffected = ps.executeUpdate();
             if (rowsAffected > 0) {
@@ -55,6 +57,43 @@ public class RequestTravelManagementDaoImpl extends DbConfig implements RequestT
             closeStatement(null, ps);
         }
         return result;
+    }
+
+    @Override
+    public Map<String, Object> insertStatus(Map<String, Object> param, Connection con) throws Exception {
+        Map<String, Object> result = new HashMap<>();
+        String insertData = "INSERT INTO public.tbl_status (status, date, employee_id, travel_expense_id) VALUES (?, ?, ?, ?)";
+        PreparedStatement ps = null;
+        try {
+            ps = con.prepareStatement(insertData);
+            ps.setString(1, param.get("status") != null ? param.get("status").toString() : null);
+            ps.setDate(2, param.get("date") != null ? java.sql.Date.valueOf(param.get("date").toString()) : null);
+            ps.setInt(3, param.get("employee_id") != null ? (Integer) param.get("employee_id") : null);
+            ps.setInt(4, param.get("travel_expense_id") != null ? (Integer) param.get("travel_expense_id") : null);
+
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected > 0) {
+                result.put("status", "success");
+                result.put("message", "Status inserted successfully.");
+            } else {
+                result.put("status", "failure");
+                result.put("message", "Failed to insert status.");
+            }
+
+            log.info("Inserted status: {}", param);
+        } catch (Exception e) {
+            log.error("Failed to insert status", e);
+            throw new Exception("Failed to insert status", e);
+        } finally {
+            closeStatement(null, ps);
+        }
+        return result;
+    }
+
+    @Override
+    public int findIdByEmail(String email, Connection con) throws Exception {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findIdByEmail'");
     }
 
 }
