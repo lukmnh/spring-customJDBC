@@ -20,7 +20,7 @@ Springboot JDBC for the backend (server-side),
 ReactJS (the UI) for frontend.
 
 in module included :
-register employee
-login using spring security (not yet implemented)
-form for insert travel request
+register employee,
+login using spring security (not yet implemented),
+form for insert travel request,
 find the history travel request
