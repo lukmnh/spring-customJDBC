@@ -16,7 +16,7 @@ THE ERD
 - java version 21
 
 this project for inserted Form TravelRequest on company using tech :
-Springboot
+Springboot JDBC
 ReactJS (the UI)
 
 in module included :
