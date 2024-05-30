@@ -6,6 +6,7 @@ create table in postgres
 - tbl_tr_travelexpense
 - tbl_m_status_tracking
 - tbl_m_map_status (for list status approved and reimburse or finance settlement)
+- tbl_expense_detail (to be) to insert, update, and fetch the cost for each trip
 
 THE ERD
 ![ERD-TravelExpenses](https://github.com/lukmnh/spring-customJDBC/assets/86191995/057f9408-5669-400e-8d60-043fe184fb07)
