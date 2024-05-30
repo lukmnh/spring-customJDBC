@@ -156,7 +156,6 @@ public class RequestTravelManagementDaoImpl extends DbConfig implements RequestT
                 "join tbl_m_employee e on s.employee_id = e.id_employee\n" +
                 "where date in (select max(date) from tbl_m_status_tracking group by employee_id, travel_id)\n" +
                 "and e.email = ? order by date desc limit 1\n";
-        log.info("Executing query: {}", findHistory);
         PreparedStatement ps = null;
         ResultSet rs = null;
 

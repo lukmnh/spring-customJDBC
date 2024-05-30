@@ -1,14 +1,17 @@
 create table in postgres
+
 - tbl_m_role
 - tbl_m_employee
 - tbl_tr_user
 - tbl_tr_travelexpense
 - tbl_m_status_tracking
+- tbl_m_map_status (for list status approved and reimburse or finance settlement)
 
 THE ERD
 ![ERD-TravelExpenses](https://github.com/lukmnh/spring-customJDBC/assets/86191995/057f9408-5669-400e-8d60-043fe184fb07)
 
- the project spring include { instal on https://start.spring.io/ }
+the project spring include { instal on https://start.spring.io/ }
+
 - choose project maven
 - language java
 - Spring Boot version {adjust to newest version}
@@ -17,9 +20,9 @@ THE ERD
 
 this project for inserted Form TravelRequest on company using tech :
 Springboot JDBC for the backend (server-side),
-ReactJS (the UI) for frontend.
+ReactJS (the UI) for frontend (not yet implemented).
 
-in module included :
+in module included feat:
 register employee,
 login using spring security (not yet implemented),
 form for insert travel request,

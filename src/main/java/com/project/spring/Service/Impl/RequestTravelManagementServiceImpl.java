@@ -109,8 +109,6 @@ public class RequestTravelManagementServiceImpl extends DbConfig implements Requ
             // response.get("date").toString() : null);
             // orderedResponse.put("status", response.get("status") != null ?
             // response.get("status").toString() : null);
-
-            log.info("data history : {}", response);
         } catch (Exception e) {
             log.error("Failed to check history", e);
             throw new Exception("Failed to check history", e);
