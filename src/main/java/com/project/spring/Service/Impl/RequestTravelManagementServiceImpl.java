@@ -84,6 +84,7 @@ public class RequestTravelManagementServiceImpl extends DbConfig implements Requ
     @Override
     public Map<String, Object> getHistoryByEmail(String email) throws Exception {
         Map<String, Object> response = new HashMap<>();
+        Map<String, Object> orderedResponse = new LinkedHashMap<>();
         Connection con = null;
         if (!Util.isConnectionAvail(con)) {
             con = this.getConnection();
@@ -92,6 +93,24 @@ public class RequestTravelManagementServiceImpl extends DbConfig implements Requ
 
         try {
             response = rtm.findLastHistoryTravel(email, con);
+            // orderedResponse.put("fullname",
+            // response.get("fullname") != null ? response.get("fullname").toString() :
+            // null);
+            // orderedResponse.put("start_location_at",
+            // response.get("start_location_at") != null ?
+            // response.get("start_location_at").toString() : null);
+            // orderedResponse.put("location_ended_at",
+            // response.get("location_ended_at") != null ?
+            // response.get("location_ended_at").toString() : null);
+            // orderedResponse.put("description",
+            // response.get("description") != null ? response.get("description").toString()
+            // : null);
+            // orderedResponse.put("date", response.get("date") != null ?
+            // response.get("date").toString() : null);
+            // orderedResponse.put("status", response.get("status") != null ?
+            // response.get("status").toString() : null);
+
+            log.info("data history : {}", response);
         } catch (Exception e) {
             log.error("Failed to check history", e);
             throw new Exception("Failed to check history", e);

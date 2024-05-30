@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.stereotype.Repository;
@@ -148,28 +149,43 @@ public class RequestTravelManagementDaoImpl extends DbConfig implements RequestT
 
     @Override
     public Map<String, Object> findLastHistoryTravel(String email, Connection con) throws Exception {
-        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> result = new LinkedHashMap<>();
         String findHistory = "select e.fullname, t.start_location_at, t.location_ended_at, t.description, s.date, s.status from tbl_m_status_tracking s\n"
                 +
                 "join tbl_tr_travelexpense t on s.travel_id = t.id_travel\n" +
                 "join tbl_m_employee e on s.employee_id = e.id_employee\n" +
                 "where date in (select max(date) from tbl_m_status_tracking group by employee_id, travel_id)\n" +
-                "and e.email = 'lia@freelance.co.id' order by date desc limit 1\n";
+                "and e.email = ? order by date desc limit 1\n";
+        log.info("Executing query: {}", findHistory);
         PreparedStatement ps = null;
         ResultSet rs = null;
 
         try {
             ps = con.prepareStatement(findHistory);
             ps.setString(1, email);
+            log.info("Set email parameter: {}", email);
             rs = ps.executeQuery();
-
-            while (rs.next()) {
+            log.info("Executed query, checking results...");
+            con.commit();
+            if (rs.next()) {
+                log.info("Found results for email: {}", email);
                 result.put("fullname", rs.getString("fullname"));
                 result.put("start_location_at", rs.getString("start_location_at"));
                 result.put("location_ended_at", rs.getString("location_ended_at"));
                 result.put("description", rs.getString("description"));
                 result.put("date", rs.getString("date"));
                 result.put("status", rs.getString("status"));
+                // ResultSetMetaData rsmd = rs.getMetaData();
+                // int columnCount = rsmd.getColumnCount();
+                // log.info("Column count: {}", columnCount);
+                // for (int i = 1; i <= columnCount; i++) {
+
+                // // String columnName = rsmd.getColumnName(i);
+                // // log.info("Column name: {}", columnName);
+                // // result.put(columnName, rs.getObject(i));
+                // }
+            } else {
+                log.info("email not found, please input the correct email!", email);
             }
 
             log.info("findHistory : {}", result);

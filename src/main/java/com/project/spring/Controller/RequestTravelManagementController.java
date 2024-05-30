@@ -5,7 +5,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,7 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.project.spring.Service.RequestTravelManagementService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RestController
+@Slf4j
 @RequestMapping(value = "/api")
 public class RequestTravelManagementController {
 
@@ -31,8 +33,10 @@ public class RequestTravelManagementController {
         }
     }
 
-    @GetMapping("/findLastHistory")
-    public ResponseEntity<Map<String, Object>> findHistory(@RequestBody String email) {
+    @PostMapping("/findHistoryTravel")
+    public ResponseEntity<Map<String, Object>> findHistory(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        log.info("email : {}", email);
         try {
             Map<String, Object> resp = requestTravelManagementService.getHistoryByEmail(email);
             return ResponseEntity.ok(resp);
