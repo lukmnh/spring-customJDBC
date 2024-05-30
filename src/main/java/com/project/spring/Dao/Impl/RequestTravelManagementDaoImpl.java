@@ -4,11 +4,14 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Repository;
@@ -67,13 +70,14 @@ public class RequestTravelManagementDaoImpl extends DbConfig implements RequestT
     @Override
     public Map<String, Object> insertStatus(Map<String, Object> param, Connection con) throws Exception {
         Map<String, Object> result = new HashMap<>();
-        String insertData = "INSERT INTO public.tbl_m_status_tracking (status, date, employee_id, travel_id) VALUES (?, current_timestamp, ?, ?)";
+        String insertData = "INSERT INTO public.tbl_m_status_tracking (status, date, employee_id, travel_id, current_status) VALUES (?, current_timestamp, ?, ?)";
         PreparedStatement ps = null;
         try {
             ps = con.prepareStatement(insertData);
             ps.setString(1, param.get("status") != null ? param.get("status").toString() : null);
             ps.setInt(2, param.get("employee_id") != null ? (Integer) param.get("employee_id") : null);
             ps.setInt(3, param.get("travel_id") != null ? (Integer) param.get("travel_id") : null);
+            ps.setString(4, param.get("current_status") != null ? param.get("current_status").toString() : null);
 
             int rowsAffected = ps.executeUpdate();
             if (rowsAffected > 0) {
@@ -121,8 +125,14 @@ public class RequestTravelManagementDaoImpl extends DbConfig implements RequestT
 
     @Override
     public int findIdTravelByEmail(String email, Connection con) throws Exception {
-        int result = 0;
-        String getIdTravel = "select id_travel from tbl_tr_travelexpense where email = ? order by created_date desc limit 1";
+        int result = -1;
+        // String getIdTravel = "select id_travel from tbl_tr_travelexpense where email
+        // = ? and order by created_date desc limit 1";
+        String getIdTravel = "select t.id_travel\n" +
+                "from tbl_m_status_tracking s\n" +
+                "join tbl_tr_travelexpense t on s.travel_id = t.id_travel\n" +
+                "where t.email = ?\n" +
+                "order by t.created_date desc limit 1\n";
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
@@ -130,7 +140,7 @@ public class RequestTravelManagementDaoImpl extends DbConfig implements RequestT
             ps.setString(1, email);
             rs = ps.executeQuery();
             if (rs.next()) {
-                result = rs.getInt(1);
+                result = rs.getInt("id_travel");
             }
 
         } catch (Exception e) {
@@ -148,43 +158,68 @@ public class RequestTravelManagementDaoImpl extends DbConfig implements RequestT
     }
 
     @Override
-    public Map<String, Object> findLastHistoryTravel(String email, Connection con) throws Exception {
-        Map<String, Object> result = new LinkedHashMap<>();
-        String findHistory = "select e.fullname, t.start_location_at, t.location_ended_at, t.description, s.date, s.status from tbl_m_status_tracking s\n"
-                +
-                "join tbl_tr_travelexpense t on s.travel_id = t.id_travel\n" +
-                "join tbl_m_employee e on s.employee_id = e.id_employee\n" +
-                "where date in (select max(date) from tbl_m_status_tracking group by employee_id, travel_id)\n" +
-                "and e.email = ? order by date desc limit 1\n";
+    public List<Map<String, Object>> findLastHistoryTravel(String email, int travelId, Connection con)
+            throws Exception {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String findHistory = "WITH FindHistory AS (\n" +
+                "SELECT\n" +
+                "st.employee_id,\n" +
+                "st.travel_id,\n" +
+                "st.status,\n" +
+                "st.date,\n" +
+                "emp.id_employee,\n" +
+                "emp.fullname AS employee_name,\n" +
+                "emp.email,\n" +
+                "te.id_travel,\n" +
+                "te.start_location_at AS start_location,\n" +
+                "te.location_ended_at AS end_location,\n" +
+                "te.description AS travel_description,\n" +
+                "ROW_NUMBER() OVER (PARTITION BY st.employee_id, st.travel_id ORDER BY st.date DESC) AS rn\n" +
+                "FROM\n" +
+                "tbl_m_status_tracking st\n" +
+                "JOIN\n" +
+                "tbl_m_employee emp ON st.employee_id = emp.id_employee\n" +
+                "JOIN\n" +
+                "tbl_tr_travelexpense te ON st.travel_id = te.id_travel\n" +
+                "WHERE\n" +
+                "emp.email = ?\n" +
+                "AND st.travel_id = ?\n" +
+                ")\n" +
+                "SELECT\n" +
+                "employee_name,\n" +
+                "start_location,\n" +
+                "end_location,\n" +
+                "travel_description,\n" +
+                "date,\n" +
+                "status\n" +
+                "FROM\n" +
+                "FindHistory\n" +
+                "WHERE\n" +
+                "rn <= 3\n" +
+                "ORDER BY\n" +
+                "employee_id, travel_id, date ASC;\n";
         PreparedStatement ps = null;
         ResultSet rs = null;
 
         try {
             ps = con.prepareStatement(findHistory);
             ps.setString(1, email);
+            ps.setInt(2, travelId);
             log.info("Set email parameter: {}", email);
+            log.info("Set travelId parameter: {}", travelId);
             rs = ps.executeQuery();
             log.info("Executed query, checking results...");
             con.commit();
-            if (rs.next()) {
+            while (rs.next()) {
+                Map<String, Object> row = new LinkedHashMap<>();
                 log.info("Found results for email: {}", email);
-                result.put("fullname", rs.getString("fullname"));
-                result.put("start_location_at", rs.getString("start_location_at"));
-                result.put("location_ended_at", rs.getString("location_ended_at"));
-                result.put("description", rs.getString("description"));
-                result.put("date", rs.getString("date"));
-                result.put("status", rs.getString("status"));
-                // ResultSetMetaData rsmd = rs.getMetaData();
-                // int columnCount = rsmd.getColumnCount();
-                // log.info("Column count: {}", columnCount);
-                // for (int i = 1; i <= columnCount; i++) {
-
-                // // String columnName = rsmd.getColumnName(i);
-                // // log.info("Column name: {}", columnName);
-                // // result.put(columnName, rs.getObject(i));
-                // }
-            } else {
-                log.info("email not found, please input the correct email!", email);
+                row.put("employee_name", rs.getString("employee_name"));
+                row.put("start_location", rs.getString("start_location"));
+                row.put("end_location", rs.getString("end_location"));
+                row.put("travel_description", rs.getString("travel_description"));
+                row.put("date", rs.getString("date"));
+                row.put("status", rs.getString("status"));
+                result.add(row);
             }
 
             log.info("findHistory : {}", result);
@@ -197,4 +232,63 @@ public class RequestTravelManagementDaoImpl extends DbConfig implements RequestT
         return result;
     }
 
+    @Override
+    public Map<String, Object> approvalStatus(String email, int managerId, int travelId, Connection con)
+            throws Exception {
+        Map<String, Object> responseApprove = new HashMap<>();
+        String updateStatus = "UPDATE tbl_m_status_tracking st\n" +
+                "SET\n" +
+                "status = 'Approved Request',\n" +
+                "date = NOW(),\n" +
+                "current_status = 'Request Approved, Have a safe trip!'\n" +
+                "FROM tbl_m_employee e\n" +
+                "WHERE st.employee_id = e.id_employee\n" +
+                "AND e.manager_id = ?;\n" +
+                "AND e.email = ?;\n" +
+                "AND st.travel_id = ?\n";
+
+        PreparedStatement ps = null;
+        try {
+            ps = con.prepareStatement(updateStatus);
+            ps.setInt(1, managerId);
+            ps.setString(2, email);
+            ps.setInt(3, travelId);
+            int rowsUpdated = ps.executeUpdate();
+            if (rowsUpdated > 0) {
+                responseApprove.put("status", "success");
+                responseApprove.put("message", "Status updated successfully.");
+                con.commit();
+            } else {
+                responseApprove.put("status", "failure");
+                responseApprove.put("message", "Failed to update status.");
+                con.rollback();
+            }
+        } catch (Exception e) {
+            log.error("Failed to update status", e);
+            throw new Exception("Failed to update status travel", e);
+        } finally {
+            closeStatement(null, ps);
+        }
+        return responseApprove;
+    }
+
+    @Override
+    public int findManagerIdByEmail(String email, Connection con) throws Exception {
+        int managerId = -1;
+        String query = "SELECT manager_id FROM tbl_m_employee WHERE email = ?";
+        try (PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    managerId = rs.getInt("manager_id");
+                }
+            }
+        } catch (SQLException e) {
+            throw new Exception("Failed to retrieve managerId: " + e.getMessage(), e);
+        }
+        return managerId;
+    }
+
 }
+
+// after the approval move to settlement and create expense table

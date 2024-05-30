@@ -1,5 +1,6 @@
 package com.project.spring.Controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,15 +35,25 @@ public class RequestTravelManagementController {
     }
 
     @PostMapping("/findHistoryTravel")
-    public ResponseEntity<Map<String, Object>> findHistory(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<List<Map<String, Object>>> findHistory(@RequestBody Map<String, String> payload) {
         String email = payload.get("email");
         log.info("email : {}", email);
         try {
-            Map<String, Object> resp = requestTravelManagementService.getHistoryByEmail(email);
+            List<Map<String, Object>> resp = requestTravelManagementService.getHistoryByEmail(email);
             return ResponseEntity.ok(resp);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("status", "failure", "message", "Failed to fetch data history"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/approve")
+    public ResponseEntity<Map<String, Object>> approveTravelRequest(@RequestBody Map<String, Object> payload) {
+        String email = (String) payload.get("email");
+        try {
+            Map<String, Object> response = requestTravelManagementService.approveTravelRequest(email);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 
     }

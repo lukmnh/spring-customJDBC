@@ -5,8 +5,10 @@ import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +54,8 @@ public class RequestTravelManagementServiceImpl extends DbConfig implements Requ
                     statusParam.put("employee_id", employeeId);
                     int travelId = rtm.findIdTravelByEmail(param.get("email").toString(), con);
                     statusParam.put("travel_id", travelId);
+                    String currentStatus = "Submited request form travel, Waiting for a Approval!!";
+                    statusParam.put("current_status", currentStatus);
                 } else {
                     log.warn("Failed to insert travel request. Status insertion skipped.");
                 }
@@ -82,9 +86,9 @@ public class RequestTravelManagementServiceImpl extends DbConfig implements Requ
     }
 
     @Override
-    public Map<String, Object> getHistoryByEmail(String email) throws Exception {
-        Map<String, Object> response = new HashMap<>();
-        Map<String, Object> orderedResponse = new LinkedHashMap<>();
+    public List<Map<String, Object>> getHistoryByEmail(String email) throws Exception {
+        // Map<String, Object> response = new HashMap<>();
+        List<Map<String, Object>> orderedResponse = new ArrayList<>();
         Connection con = null;
         if (!Util.isConnectionAvail(con)) {
             con = this.getConnection();
@@ -92,30 +96,19 @@ public class RequestTravelManagementServiceImpl extends DbConfig implements Requ
         con.setAutoCommit(false);
 
         try {
-            response = rtm.findLastHistoryTravel(email, con);
-            // orderedResponse.put("fullname",
-            // response.get("fullname") != null ? response.get("fullname").toString() :
-            // null);
-            // orderedResponse.put("start_location_at",
-            // response.get("start_location_at") != null ?
-            // response.get("start_location_at").toString() : null);
-            // orderedResponse.put("location_ended_at",
-            // response.get("location_ended_at") != null ?
-            // response.get("location_ended_at").toString() : null);
-            // orderedResponse.put("description",
-            // response.get("description") != null ? response.get("description").toString()
-            // : null);
-            // orderedResponse.put("date", response.get("date") != null ?
-            // response.get("date").toString() : null);
-            // orderedResponse.put("status", response.get("status") != null ?
-            // response.get("status").toString() : null);
+            int travelId = rtm.findIdTravelByEmail(email, con);
+            if (travelId != -1) {
+                orderedResponse = rtm.findLastHistoryTravel(email, travelId, con);
+            } else {
+                log.info("No travel ID found for email: {}", email);
+            }
         } catch (Exception e) {
             log.error("Failed to check history", e);
             throw new Exception("Failed to check history", e);
         } finally {
             closeConnection(con);
         }
-        return response;
+        return orderedResponse;
     }
 
     private Date parseDate(String dateStr) throws ParseException {
@@ -135,6 +128,36 @@ public class RequestTravelManagementServiceImpl extends DbConfig implements Requ
                 }
             }
         }
+    }
+
+    @Override
+    public Map<String, Object> approveTravelRequest(String email) throws Exception {
+        Map<String, Object> response = new HashMap<>();
+        Connection con = null;
+        if (!Util.isConnectionAvail(con)) {
+            con = this.getConnection();
+        }
+        con.setAutoCommit(false);
+
+        try {
+            int managerId = rtm.findManagerIdByEmail(email, con);
+            int travelId = rtm.findIdTravelByEmail(email, con);
+            if (travelId != -1) {
+                response = rtm.approvalStatus(email, managerId, travelId, con);
+            } else {
+                log.info("No travel ID found for email: {}", email);
+                response.put("status", "failure");
+                response.put("message", "No travel ID found for email");
+            }
+            con.commit();
+        } catch (Exception e) {
+            log.error("Failed to approve travel request", e);
+            con.rollback();
+            throw new Exception("Failed to approve travel request", e);
+        } finally {
+            closeConnection(con);
+        }
+        return response;
     }
 
 }
