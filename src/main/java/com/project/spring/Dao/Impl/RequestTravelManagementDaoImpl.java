@@ -236,16 +236,24 @@ public class RequestTravelManagementDaoImpl extends DbConfig implements RequestT
     public Map<String, Object> approvalStatus(String email, int managerId, int travelId, Connection con)
             throws Exception {
         Map<String, Object> responseApprove = new HashMap<>();
-        String updateStatus = "UPDATE tbl_m_status_tracking st\n" +
-                "SET\n" +
-                "status = 'Approved Request',\n" +
-                "date = NOW(),\n" +
-                "current_status = 'Request Approved, Have a safe trip!'\n" +
-                "FROM tbl_m_employee e\n" +
-                "WHERE st.employee_id = e.id_employee\n" +
-                "AND e.manager_id = ?;\n" +
-                "AND e.email = ?;\n" +
-                "AND st.travel_id = ?\n";
+        String updateStatus = "WITH employee_data AS (\n" +
+                "SELECT\n" +
+                "e.id_employee\n" +
+                "FROM\n" +
+                "tbl_m_employee e\n" +
+                "WHERE\n" +
+                "e.manager_id = ?\n" +
+                "AND e.email = ?\n" +
+                ")\n" +
+                "INSERT INTO tbl_m_status_tracking (employee_id, status, date, current_status, travel_id)\n" +
+                "SELECT\n" +
+                "ed.id_employee,\n" +
+                "'Approved Request',\n" +
+                "NOW(),\n" +
+                "'Request Approved, Have a safe trip!',\n" +
+                "?\n" +
+                "FROM\n" +
+                "employee_data ed\n";
 
         PreparedStatement ps = null;
         try {
@@ -258,6 +266,7 @@ public class RequestTravelManagementDaoImpl extends DbConfig implements RequestT
                 responseApprove.put("status", "success");
                 responseApprove.put("message", "Status updated successfully.");
                 con.commit();
+                log.info("data updated : {}", responseApprove);
             } else {
                 responseApprove.put("status", "failure");
                 responseApprove.put("message", "Failed to update status.");

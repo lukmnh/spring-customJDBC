@@ -142,7 +142,7 @@ public class RequestTravelManagementServiceImpl extends DbConfig implements Requ
         try {
             int managerId = rtm.findManagerIdByEmail(email, con);
             int travelId = rtm.findIdTravelByEmail(email, con);
-            if (travelId != -1) {
+            if (travelId != -1 & managerId != -1) {
                 response = rtm.approvalStatus(email, managerId, travelId, con);
             } else {
                 log.info("No travel ID found for email: {}", email);
