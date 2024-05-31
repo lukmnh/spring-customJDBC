@@ -261,19 +261,55 @@ public class RequestTravelManagementDaoImpl extends DbConfig implements RequestT
             ps.setInt(1, managerId);
             ps.setString(2, email);
             ps.setInt(3, travelId);
-            int rowsUpdated = ps.executeUpdate();
-            if (rowsUpdated > 0) {
-                responseApprove.put("status", "success");
-                responseApprove.put("message", "Status updated successfully.");
-                con.commit();
-                log.info("data updated : {}", responseApprove);
+            // Execute the CTE query to get the employee_id dynamically
+            String employeeQuery = "SELECT e.id_employee " +
+                    "FROM tbl_m_employee e " +
+                    "WHERE e.manager_id = ? " +
+                    "AND e.email = ?";
+            PreparedStatement psEmployee = con.prepareStatement(employeeQuery);
+            psEmployee.setInt(1, managerId);
+            psEmployee.setString(2, email);
+            rs = psEmployee.executeQuery();
+
+            if (rs.next()) {
+                int employeeId = rs.getInt("id_employee");
+                String status = "Approved Request";
+                String currentStatus = "Request Approved, Have a safe trip!";
+                Timestamp currentDate = new Timestamp(System.currentTimeMillis());
+
+                // Log the data before execution
+                log.info("Executing INSERT with the following data:");
+                log.info("Employee ID: {}", employeeId);
+                log.info("Manager ID: {}", managerId);
+                log.info("Email: {}", email);
+                log.info("Travel ID: {}", travelId);
+                log.info("Status: {}", status);
+                log.info("Current Status: {}", currentStatus);
+                log.info("Date: {}", currentDate);
+
+                int rowsInserted = ps.executeUpdate();
+                if (rowsInserted > 0) {
+                    responseApprove.put("status", "success");
+                    responseApprove.put("message", "Status inserted successfully.");
+                    con.commit();
+                    responseApprove.put("data inserted", rowsInserted);
+
+                    log.info("Status inserted successfully, rows inserted: {}", rowsInserted);
+                } else {
+                    responseApprove.put("status", "failure");
+                    responseApprove.put("message", "Failed to insert status.");
+                    con.rollback();
+
+                    log.info("Failed to insert status, rolling back transaction.");
+                }
             } else {
                 responseApprove.put("status", "failure");
-                responseApprove.put("message", "Failed to update status.");
-                con.rollback();
+                responseApprove.put("message", "Employee not found.");
+                log.info("Employee not found with manager ID: {} and email: {}", managerId, email);
             }
         } catch (Exception e) {
             log.error("Failed to update status", e);
+            con.rollback();
             throw new Exception("Failed to update status travel", e);
         } finally {
             closeStatement(null, ps);
