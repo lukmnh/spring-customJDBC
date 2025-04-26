@@ -7,8 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public final class Util {
-    private Util() {
-    }
 
     public static Boolean isConnectionAvail(Connection connection) throws Exception {
         try {

@@ -17,14 +17,17 @@ import org.springframework.stereotype.Service;
 import com.project.spring.Dao.RequestTravelManagementDao;
 import com.project.spring.Helper.Util;
 import com.project.spring.Service.RequestTravelManagementService;
-import com.project.spring.connection.DbConfig;
+import com.project.spring.connection.ConnectionManager;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-public class RequestTravelManagementServiceImpl extends DbConfig implements RequestTravelManagementService {
+public class RequestTravelManagementServiceImpl implements RequestTravelManagementService {
 
+    @Autowired
+
+    private ConnectionManager connectionManager;
     @Autowired
     private RequestTravelManagementDao rtm;
 
@@ -35,7 +38,7 @@ public class RequestTravelManagementServiceImpl extends DbConfig implements Requ
         Connection con = null;
         try {
             if (!Util.isConnectionAvail(con)) {
-                con = this.getConnection();
+                con = connectionManager.getConnection();
             }
             con.setAutoCommit(false);
 
@@ -80,7 +83,7 @@ public class RequestTravelManagementServiceImpl extends DbConfig implements Requ
             log.error("Failed to insert travel request", e);
             throw new Exception("Failed to insert travel request", e);
         } finally {
-            closeConnection(con);
+            connectionManager.closeConnection(con);
         }
         return response;
     }
@@ -91,7 +94,7 @@ public class RequestTravelManagementServiceImpl extends DbConfig implements Requ
         List<Map<String, Object>> orderedResponse = new ArrayList<>();
         Connection con = null;
         if (!Util.isConnectionAvail(con)) {
-            con = this.getConnection();
+            con = connectionManager.getConnection();
         }
         con.setAutoCommit(false);
 
@@ -106,7 +109,7 @@ public class RequestTravelManagementServiceImpl extends DbConfig implements Requ
             log.error("Failed to check history", e);
             throw new Exception("Failed to check history", e);
         } finally {
-            closeConnection(con);
+            connectionManager.closeConnection(con);
         }
         return orderedResponse;
     }
@@ -135,7 +138,7 @@ public class RequestTravelManagementServiceImpl extends DbConfig implements Requ
         Map<String, Object> response = new HashMap<>();
         Connection con = null;
         if (!Util.isConnectionAvail(con)) {
-            con = this.getConnection();
+            con = connectionManager.getConnection();
         }
         con.setAutoCommit(false);
 
@@ -155,7 +158,7 @@ public class RequestTravelManagementServiceImpl extends DbConfig implements Requ
             con.rollback();
             throw new Exception("Failed to approve travel request", e);
         } finally {
-            closeConnection(con);
+            connectionManager.closeConnection(con);
         }
         return response;
     }
