@@ -28,3 +28,6 @@ register employee,
 login using spring security (not yet implemented),
 form for insert travel request,
 find the history travel request
+
+# REDIS
+In the future, i will use Redis caching, install Docker, set up Redis according to application.properties, and try if the logic works.
